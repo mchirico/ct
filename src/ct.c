@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- 
+
 
  Description:
 
@@ -24,20 +24,32 @@
 
  Example Usage:
 
-    $ ./ct gmail.com 80   
+    $ ./ct gmail.com 80
     03-16-2013 12:59:32.20282,gmail.com,74.125.226.213,80,Connected,***   Good  ***
 
     $ ./ct gmail.com 81
     03-16-2013 13:00:10.79637,gmail.com,74.125.226.213,81,No Connection
-  
+
+  Or, you can but this in a quick script. It will never block, so your script
+  can go about it's business.
+
+    $ for i in $(seq 79 84); do ./ct gmail.com ${i}; done
+    03-16-2013 13:15:35.20628,gmail.com,74.125.226.245,79,No Connection,timeout
+    03-16-2013 13:15:36.24639,gmail.com,74.125.226.246,80,Connected,***   Good  ***
+    03-16-2013 13:15:37.28678,gmail.com,74.125.226.245,81,No Connection,timeout
+    03-16-2013 13:15:38.32927,gmail.com,74.125.226.246,82,No Connection,timeout
+    03-16-2013 13:15:39.37058,gmail.com,74.125.226.245,83,No Connection,timeout
+    03-16-2013 13:15:40.41139,gmail.com,74.125.226.246,84,No Connection,timeout
+
 
 
  Getting and Compiling the Program:
 
+    wget https://raw.github.com/mchirico/ct/master/src/ct.c
     gcc ct.c -o ct -lpthread
- 
 
- */
+
+*/
 
 
 #include <arpa/inet.h>
@@ -146,20 +158,21 @@ process(int sockfd, char *cmd)
 
 
 
-void prTime() {
-  char buffer[30];
-  struct timeval tv;
+void prTime()
+{
+    char buffer[30];
+    struct timeval tv;
 
-  time_t curtime;
+    time_t curtime;
 
 
 
-  gettimeofday(&tv, NULL); 
-  curtime=tv.tv_sec;
+    gettimeofday(&tv, NULL);
+    curtime = tv.tv_sec;
 
-  strftime(buffer,30,"%m-%d-%Y %T.",localtime(&curtime));
-  printf("%s%d",buffer,tv.tv_usec);
-  return;
+    strftime(buffer, 30, "%m-%d-%Y %T.", localtime(&curtime));
+    printf("%s%d", buffer, tv.tv_usec);
+    return;
 
 }
 
@@ -222,7 +235,6 @@ int main(int argc, char **argv)
 		hname, hstrerror(h_errno));
 	exit(1);
     }
-
     prTime();
     printf(",%s", hptr->h_name);
     if (hptr->h_addrtype == AF_INET
@@ -234,7 +246,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Error call inet_ntop \n");
     }
 
-    printf(",%s",port);
+    printf(",%s", port);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -253,8 +265,8 @@ int main(int argc, char **argv)
 
     //process(sockfd, cmd);
     close(sockfd);
-    if(data1.status == -1)
-      printf(",No Connection,timeout\n");
+    if (data1.status == -1)
+	printf(",No Connection,timeout\n");
     exit(data1.status);
 
 }
