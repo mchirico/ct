@@ -1,10 +1,42 @@
 /*
- * Copyright (C) GPL 2005, Mike Chirico mchirico@gmail.com
- *
- *   gcc ct.c -o ct -lpthread
- *
- *   Create a program that will quickly test a connection
- *   without blocking.
+    Copyright (C) GPL 2005, Mike Chirico mchirico@gmail.com
+    https://github.com/mchirico/ct
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ 
+
+ Description:
+
+    Simple program for testing a tcp connection, without blocking.
+
+
+ Example Usage:
+
+    $ ./ct gmail.com 80   
+    03-16-2013 12:59:32.20282,gmail.com,74.125.226.213,80,Connected,***   Good  ***
+
+    $ ./ct gmail.com 81
+    03-16-2013 13:00:10.79637,gmail.com,74.125.226.213,81,No Connection
+  
+
+
+ Getting and Compiling the Program:
+
+    gcc ct.c -o ct -lpthread
+ 
+
  */
 
 
