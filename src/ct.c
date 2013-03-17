@@ -49,6 +49,15 @@
     gcc ct.c -o ct -lpthread
 
 
+
+
+TODO:
+
+    ./ct gmail.com,google.com   80,81,82,83,84,85
+
+
+
+
 */
 
 
@@ -71,7 +80,7 @@
 #define SA      struct sockaddr
 #define MAXLINE 4096
 #define MAXSUB  200
-
+#define TIMEBUF_SIZE 30
 
 #define LISTENQ         1024
 
@@ -85,6 +94,8 @@ typedef struct str_thdata {
     struct sockaddr_in servaddr;
     char hname[MAXSUB + 1];
     char port[MAXSUB + 1];
+    char ip[MAXSUB +1];
+    char time_buffer[TIMEBUF_SIZE+1];
 
 } thdata;
 
@@ -157,6 +168,28 @@ process(int sockfd, char *cmd)
 }
 
 
+//03 - 16 - 2013 16: 10:43.203604
+int getTime(char *buffer)
+{
+    char tbuff[30];
+    struct timeval tv;
+
+    time_t curtime;
+
+
+    gettimeofday(&tv, NULL);
+    curtime = tv.tv_sec;
+    strftime(tbuff, 30, "%m-%d-%Y %T.", localtime(&curtime));
+    snprintf(buffer, 30, "%s%d", tbuff, tv.tv_usec);
+
+
+
+    return strlen(buffer);
+
+}
+
+
+
 
 void prTime()
 {
@@ -183,6 +216,7 @@ void *
 {
     thdata *data;
     data = (thdata *) ptr;
+    getTime(data->ip);
 
     if (connect(data->sockfd, (SA *) & (data->servaddr), sizeof(data->servaddr)) == 0) {
 	data->status = 1;
@@ -197,22 +231,8 @@ void *
 }
 
 
-
-int main(int argc, char **argv)
+void manageInput(int argc, char **argv, char *hname, char *port)
 {
-    pthread_t thread1, thread2;	/* thread variables */
-    thdata data1, data2;	/* structs to be passed to threads */
-
-
-    int sockfd;
-    struct sockaddr_in servaddr;
-
-    char **pptr;
-    char hname[MAXSUB + 1];
-    char port[MAXSUB + 1];
-    char cmd[MAXSUB + 1];
-
-
     if (argc < 3) {
 	printf("Need hostname  port\n");
 	printf("./client 127.0.0.1  10001\n");
@@ -221,13 +241,18 @@ int main(int argc, char **argv)
     snprintf(hname, MAXSUB, "%s", (char *)argv[1]);
     snprintf(port, MAXSUB, "%s", (char *)argv[2]);
 
-    if (argc == 3) {
-	snprintf(cmd, MAXSUB, "%s", (char *)argv[2]);
-    } else {
-	snprintf(cmd, MAXSUB, "date");
-    }
+    return;
+}
 
 
+
+
+int setupConnection(char *hname, char *port, thdata * data)
+{
+    int sockfd;
+    struct sockaddr_in servaddr;
+
+    char **pptr;
     char str[50];
     struct hostent *hptr;
     if ((hptr = gethostbyname(hname)) == NULL) {
@@ -253,20 +278,56 @@ int main(int argc, char **argv)
     servaddr.sin_port = htons(atoi(port));
     inet_pton(AF_INET, str, &servaddr.sin_addr);
 
-    data1.thread_no = 1;
-    data1.sockfd = sockfd;
-    data1.servaddr = servaddr;
-    data1.status = -1;
-    strcpy(data1.hname, hname);
-    strcpy(data1.port, port);
+    
+    data->thread_no = 1;
+    data->sockfd = sockfd;
+    data->servaddr = servaddr;
+    data->status = -1;
+    strcpy(data->hname, hname);
+    strcpy(data->ip,hptr->h_name);
+    strcpy(data->port, port);
 
-    pthread_create(&thread1, NULL, (void *)&quickConnect, (void *)&data1);
+
+}
+
+
+
+
+
+int main(int argc, char **argv)
+{
+    pthread_t thread[50];	/* thread variables */
+    thdata data[50];		/* structs to be passed to threads */
+
+
+    char hname[MAXSUB + 1];
+    char port[MAXSUB + 1];
+    char cmd[MAXSUB + 1];
+
+    manageInput(argc, argv, hname, port);
+    setupConnection(hname, port, &data[0]);
+
+    pthread_create(&thread[0], NULL, (void *)&quickConnect, (void *)&data[0]);
     sleep(1);
 
+
+
+    // Future stuff
     //process(sockfd, cmd);
-    close(sockfd);
-    if (data1.status == -1)
+
+    /* It appears that pthread_cancel will kill the thread if it is still
+       active. You could try to do a join to confirm, and it shouldn't
+       block. 
+    */
+    int sig;
+    sig = pthread_cancel(thread[0]);
+    if (sig != 0)
+	fprintf(stderr, "Error\n");
+
+    close(data[0].sockfd);
+
+    if (data[0].status == -1)
 	printf(",No Connection,timeout\n");
-    exit(data1.status);
+    exit(data[0].status);
 
 }
