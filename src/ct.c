@@ -86,11 +86,407 @@ TODO:
 #include <pthread.h>		/* POSIX Threads */
 #include <unistd.h>
 
+/* BEGIN OF ADDING VECTOR */
+#if !defined(__APPLE__)
+#include <malloc.h>
+#endif
+
+
+typedef struct {
+    char **key;
+    char **val;
+    int argc;
+} Key_val;
+
+typedef struct {
+    char **key;
+    Key_val **val;
+    int argc;
+} Vec;
+
+Vec *vecAdd(Vec * c, const char *key, Key_val * val);
+Key_val *keyAdd(Key_val * c, const char *key, const char *val);
+void pr(Key_val * c);
+void prV(Vec * c);
+void myfree(Key_val * c);
+void myfreeV(Vec * c);
+char *find(Key_val * c, const char *s);
+Key_val *findK(Vec * c, const char *s);
+int pvLength(Vec * c);
+int modify(Key_val * c, const char *s, const char *new_val);
+Key_val *getK(Vec * c, int index);
+char *getV(Vec * c, int index);
+char *getKkey(Key_val * c, int index);
+
+/*
+Call this from parse hosts
+
+*/
+Key_val *parse_ports(char *s, char **array, Key_val * k)
+{
+
+
+    char *str1, *str2, *token, *subtoken;
+    char *saveptr1, *saveptr2;
+    char *sep1 = ",";
+    char *sep2 = "-";
+
+    int count = 0;
+    int count2 = 0;
+    char last[50];
+    int j;
+
+    for (j = 1, str1 = s;; j++, str1 = NULL) {
+	token = strtok_r(str1, sep1, &saveptr1);
+	if (token == NULL)
+	    break;
+	//printf("%d: %s\n", j, token);
+	count2 = 0;
+	for (str2 = token;; str2 = NULL) {
+	    subtoken = strtok_r(str2, sep2, &saveptr2);
+	    if (subtoken == NULL)
+		break;
+	    ++count2;
+	    if (count2 == 2) {
+		//printf("We have double last=%s current=%s\n", last, subtoken);
+		int beg = atoi(last);
+		int end = atoi(subtoken);
+		if (beg >= 1 && end <= 60000)
+		    if (beg < end) {
+			int t;
+			for (t = beg + 1; t < end; ++t) {
+			    //printf("G %d\n", t);
+			    char ts[15 + 1];
+			    snprintf(ts, 15, "%d", t);
+			    k = keyAdd(k, ts, "0");
+			    ++count;
+			}
+			//printf("\n");
+
+		    }
+	    }
+	    snprintf(last, 50, "%s", subtoken);
+	    char ts[15 + 1];
+	    snprintf(ts, 15, "%s", last);
+	    k = keyAdd(k, ts, "0");
+	    ++count;
+	}
+    }
+
+    if (k == NULL)
+	printf("ODD should not be null\n");
+
+    return k;
+}
+
+
+
+Vec *parse_hosts(char *s, char **array, Vec * v, const char *argv2)
+{
+
+    Key_val *k = NULL;
+    char **tarray;
+
+    char ports[1000];
+
+
+    char *str1, *str2, *token, *subtoken;
+    char *saveptr1, *saveptr2;
+    char *sep1 = ",";
+    char *sep2 = "-";
+
+    int count = 0;
+    int count2 = 0;
+    char last[50];
+    int j;
+
+    for (j = 1, str1 = s;; j++, str1 = NULL) {
+	token = strtok_r(str1, sep1, &saveptr1);
+	if (token == NULL)
+	    break;
+	//printf("%d: %s\n", j, token);
+	count2 = 0;
+	for (str2 = token;; str2 = NULL) {
+	    subtoken = strtok_r(str2, sep2, &saveptr2);
+	    if (subtoken == NULL)
+		break;
+	    ++count2;
+	    if (count2 == 2) {
+		printf("We have double last=%s current=%s\n", last, subtoken);
+
+
+	    }
+	    snprintf(last, 50, "%s", subtoken);
+	    char ts[15 + 1];
+	    snprintf(ts, 15, "%s", last);
+	    k = NULL;
+	    strcpy(ports, argv2);
+	    k = parse_ports(ports, tarray, k);
+	    v = vecAdd(v, ts, k);
+	    ++count;
+	}
+    }
+
+    return v;
+}
+
+
+
+
+
+
+
+
+
+Vec *vecAdd(Vec * c, const char *key, Key_val * val)
+{
+
+    char *s = NULL;
+    Key_val *v = NULL;
+    char **t = NULL;
+    Key_val **tC = NULL;
+
+    s = (char *)malloc(sizeof(char) * (strlen(key) + 1));
+    if (s == NULL)
+	return NULL;
+
+    v = val;
+
+    strcpy(s, key);
+
+    if (c == NULL) {
+	c = (Vec *) malloc(sizeof(Vec));
+	if (c == NULL)
+	    return NULL;
+	c->key = NULL;
+	c->val = NULL;
+	c->argc = 0;
+    }
+    c->argc = c->argc + 1;
+    t = (char **)realloc(c->key,
+			 sizeof(char *) * (long unsigned int)c->argc);
+    if (t == NULL)
+	return NULL;
+
+    t[c->argc - 1] = s;
+    c->key = t;
+
+    tC = realloc(c->val, sizeof(Key_val *) * (long unsigned int)c->argc);
+    if (tC == NULL)
+	return NULL;
+    tC[c->argc - 1] = v;
+    c->val = tC;
+
+    return c;
+}
+
+Key_val *keyAdd(Key_val * c, const char *key, const char *val)
+{
+
+    char *s = NULL;
+    char *v = NULL;
+    char **t = NULL;
+
+    s = (char *)malloc(sizeof(char) * (strlen(key) + 1));
+    if (s == NULL)
+	return NULL;
+    v = (char *)malloc(sizeof(char) * (strlen(val) + 1));
+    if (v == NULL)
+	return NULL;
+
+    strcpy(s, key);
+    strcpy(v, val);
+
+    if (c == NULL) {
+	c = (Key_val *) malloc(sizeof(Key_val));
+	if (c == NULL)
+	    return NULL;
+	c->key = NULL;
+	c->val = NULL;
+	c->argc = 0;
+    }
+    c->argc = c->argc + 1;
+    t = realloc(c->key, sizeof(char *) * (long unsigned int)c->argc);
+    if (t == NULL)
+	return NULL;
+
+    t[c->argc - 1] = s;
+    c->key = t;
+
+    t = realloc(c->val, sizeof(char *) * (long unsigned int)c->argc);
+    if (t == NULL)
+	return NULL;
+    t[c->argc - 1] = v;
+    c->val = t;
+
+    return c;
+}
+
+void pr(Key_val * c)
+{
+    int i;
+
+    if (c == NULL)
+	return;
+    for (i = 0; i < c->argc; ++i)
+	printf("%s->%s\n", c->key[i], c->val[i]);
+
+    return;
+}
+
+
+
+char *getV(Vec * c, int index)
+{
+
+    if (index >= c->argc || index < 0)
+	return NULL;
+
+    return c->key[index];
+
+
+}
+
+char *getKkey(Key_val * c, int index)
+{
+
+    if (index >= c->argc || index < 0)
+	return NULL;
+
+    return c->key[index];
+
+
+}
+
+
+
+void prV(Vec * c)
+{
+    int i;
+
+    if (c == NULL)
+	return;
+    for (i = 0; i < c->argc; ++i) {
+	printf("[%s]=>\n", c->key[i]);
+	pr(c->val[i]);
+	printf("\n\n");
+
+    }
+
+    return;
+}
+
+int pvLength(Vec * c)
+{
+    return c->argc;
+}
+
+void myfree(Key_val * c)
+{
+    if (c == NULL)
+	return;
+
+    int i;
+    for (i = 0; i < c->argc; ++i) {
+	free(c->key[i]);
+	free(c->val[i]);
+    }
+    free(c->key);
+    free(c->val);
+    free(c);
+
+}
+
+void myfreeV(Vec * c)
+{
+    if (c == NULL)
+	return;
+
+    int i;
+    for (i = 0; i < c->argc; ++i) {
+	free(c->key[i]);
+	myfree(c->val[i]);
+    }
+    free(c->key);
+    free(c->val);
+    free(c);
+
+}
+
+char *find(Key_val * c, const char *s)
+{
+    int i;
+    for (i = 0; i < c->argc; ++i) {
+	if (strcmp(c->key[i], s) == 0)
+	    return c->val[i];
+    }
+
+    return NULL;
+}
+
+
+/*  What if we
+    did not find
+*/
+int modify(Key_val * c, const char *s, const char *new_val)
+{
+    int i;
+    char **t = NULL;
+    char *tt = NULL;
+    for (i = 0; i < c->argc; ++i) {
+	if (strcmp(c->key[i], s) == 0) {
+	    tt = realloc(c->val[i], sizeof(char *) * (strlen(new_val)));
+	    strcpy(tt, new_val);
+	    c->val[i] = tt;
+	    return 1;
+	}
+    }
+    //Didn_t find
+    /* c->argc = c->argc + 1; t = (char **)realloc(c->key, sizeof(char *) *
+       (long unsigned int)c->argc); tt = realloc(c->val[i], sizeof(char *) *
+       (strlen(new_val))); strcpy(tt, new_val); c->val[i] = tt; */
+	c = keyAdd(c, s, new_val);
+
+    return 0;
+}
+
+
+
+/*
+   Find a particular key_val in a vector given
+   a vector key.
+ */
+Key_val *findK(Vec * c, const char *s)
+{
+    int i;
+    for (i = 0; i < c->argc; ++i)
+	if (strcmp(c->key[i], s) == 0)
+	    return c->val[i];
+
+    return NULL;
+}
+
+Key_val *
+ getK(Vec * c, int i)
+{
+
+    if (i >= 0 && i < c->argc)
+	return c->val[i];
+
+    return NULL;
+}
+
+
+
+
+
+/* END OF ADDING VECTOR */
+
 #define SA      struct sockaddr
 #define MAXLINE 4096
 #define MAXSUB  200
 #define MAX_WORKER_THREADS 20
-#define MAX_NUM_THREAD_DATABASE 500
+#define MAX_NUM_THREAD_DATABASE 200
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
@@ -220,6 +616,8 @@ void prTime()
 void *
  quickConnect(void *ptr)
 {
+
+
     thdata *data;
     data = (thdata *) ptr;
     getTime(data->time_buffer);
@@ -291,6 +689,7 @@ int setupConnection(char *hname, char *port, thdata * data)
     strcpy(data->hname, hname);
     strcpy(data->ip, ip);
     strcpy(data->port, port);
+    //printf("Setup connection port %s  host=%s\n", data->port, data->hname);
 
 
 }
@@ -314,8 +713,14 @@ void prData(thdata * data)
 
 
 
-int main(int argc, char **argv)
+
+
+
+
+int process_loop(int argc, char **argv)
 {
+
+
     pthread_t thread[MAX_WORKER_THREADS];	/* thread variables */
     thdata data[MAX_NUM_THREAD_DATABASE];	/* structs to be passed to
 						   threads */
@@ -323,35 +728,103 @@ int main(int argc, char **argv)
 
     char hname[MAXSUB + 1];
     char port[MAXSUB + 1];
-    char cmd[MAXSUB + 1];
-
-    manageInput(argc, argv, hname, port);
-    setupConnection(hname, port, &data[0]);
-
-    pthread_create(&thread[0], NULL, (void *)&quickConnect, (void *)&data[0]);
-    sleep(1);
 
 
 
-    //Future stuff
-	// process(sockfd, cmd);
 
-    /* It appears that pthread_cancel will kill the thread if it is still
-       active. You could try to do a join to confirm, and it shouldn't
-       block. */
+
+
+    int i;
+    char tp[20 + 1];
     int sig;
-    sig = pthread_cancel(thread[0]);
-    if (sig != 0) {
-      //fprintf(stderr, "Error thread may have been terminated\n");
+    int loops;
 
+    char c[1000];
+    char ports[1000];
+    char *str1, *str2, *token, *subtoken;
+    char *saveptr1, *saveptr2;
+    char **array;
+
+    Key_val *k = NULL;
+    Vec *v = NULL;
+
+
+    strcpy(c, argv[1]);
+
+    v = parse_hosts(c, array, v, argv[2]);
+    k = getK(v, 0);
+
+
+
+    loops = v->argc * k->argc;
+
+
+    int vi, ki;
+
+    i = 0;
+    for (vi = 0; vi < (v->argc); ++vi)
+	for (ki = 0; ki < (k->argc); ++ki) {
+
+
+	    k = getK(v, vi);
+	    snprintf(tp, 20, "%s", getKkey(k, ki));
+	    //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
+	    setupConnection(getV(v, vi), tp, &data[(i % MAX_WORKER_THREADS)]);
+	    pthread_create(&thread[(i % MAX_WORKER_THREADS)], NULL, (void *)&quickConnect, (void *)&data[(i % MAX_WORKER_THREADS)]);
+
+
+	    if (i > 0 && ((i % MAX_WORKER_THREADS) == 0)) {
+
+
+		sleep(1);
+
+		int j = 0;
+		for (j = 0; j < MAX_WORKER_THREADS; ++j) {
+		    sig = pthread_cancel(thread[j]);
+		    if (sig != 0) {
+			//fprintf(stderr, "Error thread may have terminated.\n");
+		    }
+		    close(data[j].sockfd);
+
+		    prData(&data[j]);
+		}
+	    }
+	    i++;
+	    //Refactor.Sloppy
+	}
+
+    /* We may have extra (loops % (MAX_WORKER_THREADS) is loops > MAX_ */
+
+
+    if ((loops % MAX_WORKER_THREADS) > 0) {
+	sleep(1);
+	int j = 0;
+	for (j = 0; j < (loops % MAX_WORKER_THREADS); ++j) {
+	    sig = pthread_cancel(thread[j]);
+	    if (sig != 0) {
+		//fprintf(stderr, "Error thread may have terminated.\n");
+	    }
+	    close(data[j].sockfd);
+	    prData(&data[j]);
+	}
     }
 
-    close(data[0].sockfd);
-    prData(&data[0]);
+    myfreeV(v);
+
+}
 
 
 
 
-    exit(data[0].status);
+int main(int argc, char **argv)
+{
+
+    if (argc != 3) {
+	fprintf(stderr, "Usage: %s host1,host2  port1,port2,port-port\n",
+		argv[0]);
+	exit(EXIT_FAILURE);
+    }
+    process_loop(argc, argv);
+
 
 }
