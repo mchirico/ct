@@ -30,7 +30,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     03-17-2013 18:30:43.78798,google.com,74.125.226.201,444,0,No Connection
 
 
- Getting and Compiling the Program:
+ Getting and Compiling the Program (It's just one source file):
 
     wget https://raw.github.com/mchirico/ct/master/src/ct.c
     gcc ct.c -o ct -lpthread
