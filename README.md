@@ -13,16 +13,21 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     $ ./ct gmail.com 81
     03-16-2013 13:00:10.79637,gmail.com,74.125.226.213,81,No Connection
 
-  Or, you can but this in a quick script. It will never block, so your script
-  can go about it's business.
+  You can also do a range of ports with multiple hosts:
 
-    $ for i in $(seq 79 84); do ./ct gmail.com ${i}; done
-    03-16-2013 13:15:35.20628,gmail.com,74.125.226.245,79,No Connection,timeout
-    03-16-2013 13:15:36.24639,gmail.com,74.125.226.246,80,Connected,***   Good  ***
-    03-16-2013 13:15:37.28678,gmail.com,74.125.226.245,81,No Connection,timeout
-    03-16-2013 13:15:38.32927,gmail.com,74.125.226.246,82,No Connection,timeout
-    03-16-2013 13:15:39.37058,gmail.com,74.125.226.245,83,No Connection,timeout
-    03-16-2013 13:15:40.41139,gmail.com,74.125.226.246,84,No Connection,timeout
+    $ ./ct gmail.com,google.com 80,440-444
+    03-17-2013 18:30:43.75353,gmail.com,74.125.226.213,80,1,Connected,*** GOOD ***
+    03-17-2013 18:30:43.75884,gmail.com,74.125.226.213,440,0,No Connection
+    03-17-2013 18:30:43.76059,gmail.com,74.125.226.213,441,0,No Connection
+    03-17-2013 18:30:43.76340,gmail.com,74.125.226.213,442,0,No Connection
+    03-17-2013 18:30:43.76632,gmail.com,74.125.226.213,443,1,Connected,*** GOOD ***
+    03-17-2013 18:30:43.76902,gmail.com,74.125.226.213,444,0,No Connection
+    03-17-2013 18:30:43.77197,google.com,74.125.226.201,80,1,Connected,*** GOOD ***
+    03-17-2013 18:30:43.77539,google.com,74.125.226.201,440,0,No Connection
+    03-17-2013 18:30:43.77866,google.com,74.125.226.201,441,0,No Connection
+    03-17-2013 18:30:43.78133,google.com,74.125.226.201,442,0,No Connection
+    03-17-2013 18:30:43.78508,google.com,74.125.226.201,443,1,Connected,*** GOOD ***
+    03-17-2013 18:30:43.78798,google.com,74.125.226.201,444,0,No Connection
 
 
  Getting and Compiling the Program:

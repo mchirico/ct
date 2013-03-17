@@ -820,8 +820,8 @@ int main(int argc, char **argv)
 {
 
     if (argc != 3) {
-	fprintf(stderr, "Usage: %s host1,host2  port1,port2,port-port\n",
-		argv[0]);
+	fprintf(stderr, "Usage: %s host1,host2  port1,port2,port-port\nExample:\n %s gmail.com,google.com 80,440-444\n\n",
+		argv[0],argv[0]);
 	exit(EXIT_FAILURE);
     }
     process_loop(argc, argv);
