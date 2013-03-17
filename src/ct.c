@@ -89,8 +89,9 @@ TODO:
 #define SA      struct sockaddr
 #define MAXLINE 4096
 #define MAXSUB  200
+#define MAX_WORKER_THREADS 20
+#define MAX_NUM_THREAD_DATABASE 500
 #define TIMEBUF_SIZE 30
-
 #define LISTENQ         1024
 
 extern int h_errno;
@@ -103,8 +104,9 @@ typedef struct str_thdata {
     struct sockaddr_in servaddr;
     char hname[MAXSUB + 1];
     char port[MAXSUB + 1];
-    char ip[MAXSUB +1];
-    char time_buffer[TIMEBUF_SIZE+1];
+    char ip[MAXSUB + 1];
+    char time_buffer[TIMEBUF_SIZE + 1];
+    char comment[MAXSUB + 1];
 
 } thdata;
 
@@ -191,12 +193,9 @@ int getTime(char *buffer)
     strftime(tbuff, 30, "%m-%d-%Y %T.", localtime(&curtime));
     snprintf(buffer, 30, "%s%d", tbuff, tv.tv_usec);
 
-
-
     return strlen(buffer);
 
 }
-
 
 
 
@@ -206,8 +205,6 @@ void prTime()
     struct timeval tv;
 
     time_t curtime;
-
-
 
     gettimeofday(&tv, NULL);
     curtime = tv.tv_sec;
@@ -225,15 +222,12 @@ void *
 {
     thdata *data;
     data = (thdata *) ptr;
-    getTime(data->ip);
+    getTime(data->time_buffer);
 
     if (connect(data->sockfd, (SA *) & (data->servaddr), sizeof(data->servaddr)) == 0) {
 	data->status = 1;
-	printf(",Connected");
-	printf(",***   Good  ***\n");
     } else {
 	data->status = 0;
-	printf(",No Connection\n");
 	//exit(1);
     }
 
@@ -263,50 +257,68 @@ int setupConnection(char *hname, char *port, thdata * data)
 
     char **pptr;
     char str[50];
+    char ip[50];
+
+    ip[0] = '\0';
     struct hostent *hptr;
     if ((hptr = gethostbyname(hname)) == NULL) {
 	fprintf(stderr, " gethostbyname error for host: %s: %s",
 		hname, hstrerror(h_errno));
 	exit(1);
     }
-    prTime();
-    printf(",%s", hptr->h_name);
+    //prTime();
+
     if (hptr->h_addrtype == AF_INET
 	&& (pptr = hptr->h_addr_list) != NULL) {
-	printf(",%s",
-	       inet_ntop(hptr->h_addrtype, *pptr, str,
-			 sizeof(str)));
+	snprintf(ip, 50, "%s", inet_ntop(hptr->h_addrtype, *pptr, str, sizeof(str)));
+
     } else {
 	fprintf(stderr, "Error call inet_ntop \n");
     }
 
-    printf(",%s", port);
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(atoi(port));
     inet_pton(AF_INET, str, &servaddr.sin_addr);
 
-    
+
     data->thread_no = 1;
     data->sockfd = sockfd;
     data->servaddr = servaddr;
     data->status = -1;
     strcpy(data->hname, hname);
-    strcpy(data->ip,hptr->h_name);
+    strcpy(data->ip, ip);
     strcpy(data->port, port);
 
 
 }
 
+void prData(thdata * data)
+{
 
+    if (data->status == -1) {
+	printf("%s,%s,%s,%s,%d,No Connection,timeout\n",
+	       data->time_buffer, data->hname, data->ip, data->port, data->status);
+    }
+    if (data->status == 0) {
+	printf("%s,%s,%s,%s,%d,No Connection\n",
+	       data->time_buffer, data->hname, data->ip, data->port, data->status);
+    }
+    if (data->status == 1) {
+	printf("%s,%s,%s,%s,%d,Connected,*** GOOD ***\n",
+	       data->time_buffer, data->hname, data->ip, data->port, data->status);
+    }
+}
 
 
 
 int main(int argc, char **argv)
 {
-    pthread_t thread[50];	/* thread variables */
-    thdata data[50];		/* structs to be passed to threads */
+    pthread_t thread[MAX_WORKER_THREADS];	/* thread variables */
+    thdata data[MAX_NUM_THREAD_DATABASE];	/* structs to be passed to
+						   threads */
 
 
     char hname[MAXSUB + 1];
@@ -321,22 +333,25 @@ int main(int argc, char **argv)
 
 
 
-    // Future stuff
-    //process(sockfd, cmd);
+    //Future stuff
+	// process(sockfd, cmd);
 
     /* It appears that pthread_cancel will kill the thread if it is still
        active. You could try to do a join to confirm, and it shouldn't
-       block. 
-    */
+       block. */
     int sig;
     sig = pthread_cancel(thread[0]);
-    if (sig != 0)
-	fprintf(stderr, "Error\n");
+    if (sig != 0) {
+      //fprintf(stderr, "Error thread may have been terminated\n");
+
+    }
 
     close(data[0].sockfd);
+    prData(&data[0]);
 
-    if (data[0].status == -1)
-	printf(",No Connection,timeout\n");
+
+
+
     exit(data[0].status);
 
 }
