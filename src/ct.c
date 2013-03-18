@@ -841,7 +841,7 @@ process_loop (int argc, char **argv)
     loops = v->argc * k->argc;
     if (loops >= MAX_WORKER_THREADS) {
       myfreeV (v);
-      fprintf(stderr,"Too many scans - try less. Something under %d\n",MAX_WORKER_THREADS);
+      fprintf(stderr,"Too many scans - try less. Something under (hosts*ports) < %d\n",MAX_WORKER_THREADS);
       exit(-1);
     }
     
