@@ -87,6 +87,36 @@ TODO:
 #include <pthread.h>
 #include <unistd.h>
 
+#define SA      struct sockaddr
+#define MAXLINE 4096
+#define MAXSUB  200
+#define MAX_WORKER_THREADS 30
+#define MAX_NUM_THREAD_DATABASE 200
+#define TIMEBUF_SIZE 30
+#define LISTENQ         1024
+
+extern int h_errno;
+
+
+typedef struct str_thdata
+{
+    int thread_no;
+    int sockfd;
+    int status;
+    struct sockaddr_in servaddr;
+    char hname[MAXSUB + 1];
+    char port[MAXSUB + 1];
+    char ip[MAXSUB + 1];
+    char time_buffer[TIMEBUF_SIZE + 1];
+    char comment[MAXSUB + 1];
+
+} thdata;
+
+
+
+
+
+
 /* BEGIN OF ADDING VECTOR */
 #if !defined(__APPLE__)
 #include <malloc.h>
@@ -512,31 +542,6 @@ getK (Vec * c, int i)
     return NULL;
 }
 /* END OF ADDING VECTOR */
-
-#define SA      struct sockaddr
-#define MAXLINE 4096
-#define MAXSUB  200
-#define MAX_WORKER_THREADS 30
-#define MAX_NUM_THREAD_DATABASE 200
-#define TIMEBUF_SIZE 30
-#define LISTENQ         1024
-
-extern int h_errno;
-
-
-typedef struct str_thdata
-{
-    int thread_no;
-    int sockfd;
-    int status;
-    struct sockaddr_in servaddr;
-    char hname[MAXSUB + 1];
-    char port[MAXSUB + 1];
-    char ip[MAXSUB + 1];
-    char time_buffer[TIMEBUF_SIZE + 1];
-    char comment[MAXSUB + 1];
-
-} thdata;
 
 
 
