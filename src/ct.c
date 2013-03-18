@@ -95,6 +95,8 @@ TODO:
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
+#define _VERSION_ "0.0.1"
+
 extern int h_errno;
 
 
@@ -938,7 +940,8 @@ main (int argc, char **argv)
     if (argc != 3)
     {
         fprintf (stderr,
-                 "Usage: %s host1,host2  port1,port2,port-port\nExample:\n %s gmail.com,google.com 80,440-444\n\n",
+                 "\n%s\nversion %s\n\nUsage: %s host1,host2  port1,port2,port-port\nExample:\n %s gmail.com,google.com 80,440-444\n\n",
+		 "Source: https://github.com/mchirico/ct",_VERSION_,
                  argv[0], argv[0]);
         exit (EXIT_FAILURE);
     }
