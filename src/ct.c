@@ -816,11 +816,13 @@ process_loop (int argc, char **argv)
 
     char hname[MAXSUB + 1];
     char port[MAXSUB + 1];
+    int tflag[MAX_WORKER_THREADS+200];
 
     int i;
     char tp[20 + 1];
     int sig;
     int loops;
+    int err;
 
     char c[1000];
     char ports[1000];
@@ -837,7 +839,12 @@ process_loop (int argc, char **argv)
     k = getK (v, 0);
 
     loops = v->argc * k->argc;
-
+    if (loops >= MAX_WORKER_THREADS) {
+      myfreeV (v);
+      fprintf(stderr,"Too many scans - try less. Something under %d\n",MAX_WORKER_THREADS);
+      exit(-1);
+    }
+    
     int vi, ki;
 
     i = 0;
@@ -849,9 +856,16 @@ process_loop (int argc, char **argv)
             snprintf (tp, 20, "%s", getKkey (k, ki));
             //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
             setupConnection (getV (v, vi), tp, &data[(i % MAX_WORKER_THREADS)]);
-            pthread_create (&thread[(i % MAX_WORKER_THREADS)], NULL,
+            err=pthread_create (&thread[(i % MAX_WORKER_THREADS)], NULL,
                             (void *) &quickConnect,
                             (void *) &data[(i % MAX_WORKER_THREADS)]);
+	    if(err != 0)
+	      {
+		fprintf(stderr,"Issue with pthread_create in process_loop\n");
+	      tflag[(i % MAX_WORKER_THREADS)]=-1;
+	      } else {
+	      tflag[(i % MAX_WORKER_THREADS)]=1;
+	    }
 
 
             if (i > 0 && ((i % MAX_WORKER_THREADS) == 0))
@@ -860,15 +874,19 @@ process_loop (int argc, char **argv)
                 int j = 0;
                 for (j = 0; j < MAX_WORKER_THREADS; ++j)
                 {
+		  if(tflag[j] == 1)
                     sig = pthread_cancel (thread[j]);
                     if (sig != 0)
                     {
-                        //fprintf(stderr, "Error thread may have terminated.\n");
-                    }
+                        fprintf(stderr, "Error thread may have terminated.\n");
+			tflag[j]=-1;
+                    }else {
+		      tflag[j]=0;
+		    }
                     sig = pthread_join(thread[j],0);
                     if (sig != 0)
                     {
-                        //fprintf(stderr, "Error thread may have terminated.\n");
+                        fprintf(stderr, "Error thread may have terminated.\n");
                     }
                     close (data[j].sockfd);
 
@@ -888,11 +906,16 @@ process_loop (int argc, char **argv)
         int j = 0;
         for (j = 0; j < (loops % MAX_WORKER_THREADS); ++j)
         {
+	  if(tflag[j]==1)
             sig = pthread_cancel (thread[j]);
             if (sig != 0)
             {
                 //fprintf(stderr, "Error thread may have terminated.\n");
-            }
+	      tflag[j]=-1;
+            } else 
+	      {
+		tflag[j]=0;
+	      }
             sig = pthread_join(thread[j],0);
             if (sig != 0)
             {
