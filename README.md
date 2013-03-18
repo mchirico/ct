@@ -26,7 +26,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     03-17-2013 20:46:53.785592,wsj.com,205.203.140.1,442,0,No Connection
     03-17-2013 20:46:53.785968,wsj.com,205.203.140.1,443,1,Connected,*** GOOD ***
 
- Note that is runs pretty quick:
+ Note that it runs pretty quick (adjust MAX_WORKER_THREADS beyond 30):
 
     real	   0m1.124s
     user	   0m0.003s
@@ -39,5 +39,6 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     gcc ct.c -o ct -lpthread
 
 
- The program is still alpha.
+ The program is still alpha, and the idea is to keep it all in one program, which
+ is what SQLite is doing with it's amalgamation.
 
