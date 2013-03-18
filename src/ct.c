@@ -90,7 +90,7 @@ TODO:
 #define SA      struct sockaddr
 #define MAXLINE 4096
 #define MAXSUB  200
-#define MAX_WORKER_THREADS 30
+#define MAX_WORKER_THREADS 50
 #define MAX_NUM_THREAD_DATABASE 200
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
@@ -770,6 +770,38 @@ prData (thdata * data)
 
 /*
   This will need to be cleaned up. A lot of extra variables here.
+
+valgrind ./ct 192.168.1.6 1-48
+
+==60851==
+==60851== HEAP SUMMARY:
+==60851==     in use at exit: 0 bytes in 0 blocks
+==60851==   total heap usage: 302 allocs, 302 frees, 36,966 bytes allocated
+==60851==
+==60851== All heap blocks were freed -- no leaks are possible
+==60851==
+==60851== For counts of detected and suppressed errors, rerun with: -v
+==60851== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
+
+
+Yet, see below the reuse of threads is not correct.
+
+valgrind ./ct 192.168.1.6 1-100
+
+60906== HEAP SUMMARY:
+==60906==     in use at exit: 13,600 bytes in 50 blocks
+==60906==   total heap usage: 610 allocs, 560 frees, 113,304 bytes allocated
+==60906==
+==60906== LEAK SUMMARY:
+==60906==    definitely lost: 0 bytes in 0 blocks
+==60906==    indirectly lost: 0 bytes in 0 blocks
+==60906==      possibly lost: 13,600 bytes in 50 blocks
+==60906==    still reachable: 0 bytes in 0 blocks
+==60906==         suppressed: 0 bytes in 0 blocks
+==60906== Rerun with --leak-check=full to see details of leaked memory
+==60906==
+==60906== For counts of detected and suppressed errors, rerun with: -v
+==60906== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
 
  */
 int
