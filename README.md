@@ -13,25 +13,31 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     $ ./ct gmail.com 81
     03-16-2013 13:00:10.79637,gmail.com,74.125.226.213,81,No Connection
 
-  You can also do a range of ports with multiple hosts:
+ You can also do a range of ports with multiple hosts:
 
-    $ ./ct gmail.com,google.com 80,440-444
-    03-17-2013 18:30:43.75353,gmail.com,74.125.226.213,80,1,Connected,*** GOOD ***
-    03-17-2013 18:30:43.75884,gmail.com,74.125.226.213,440,0,No Connection
-    03-17-2013 18:30:43.76059,gmail.com,74.125.226.213,441,0,No Connection
-    03-17-2013 18:30:43.76340,gmail.com,74.125.226.213,442,0,No Connection
-    03-17-2013 18:30:43.76632,gmail.com,74.125.226.213,443,1,Connected,*** GOOD ***
-    03-17-2013 18:30:43.76902,gmail.com,74.125.226.213,444,0,No Connection
-    03-17-2013 18:30:43.77197,google.com,74.125.226.201,80,1,Connected,*** GOOD ***
-    03-17-2013 18:30:43.77539,google.com,74.125.226.201,440,0,No Connection
-    03-17-2013 18:30:43.77866,google.com,74.125.226.201,441,0,No Connection
-    03-17-2013 18:30:43.78133,google.com,74.125.226.201,442,0,No Connection
-    03-17-2013 18:30:43.78508,google.com,74.125.226.201,443,1,Connected,*** GOOD ***
-    03-17-2013 18:30:43.78798,google.com,74.125.226.201,444,0,No Connection
+    $ time ./ct gmail.com,google.com,wsj.com 80,442-443
+    03-17-2013 20:46:53.729206,gmail.com,74.125.226.214,80,1,Connected,*** GOOD ***
+    03-17-2013 20:46:53.729728,gmail.com,74.125.226.214,442,0,No Connection
+    03-17-2013 20:46:53.730118,gmail.com,74.125.226.214,443,1,Connected,*** GOOD ***
+    03-17-2013 20:46:53.757564,google.com,74.125.226.231,80,1,Connected,*** GOOD ***
+    03-17-2013 20:46:53.758006,google.com,74.125.226.231,442,0,No Connection
+    03-17-2013 20:46:53.758449,google.com,74.125.226.231,443,1,Connected,*** GOOD ***
+    03-17-2013 20:46:53.785137,wsj.com,205.203.140.1,80,1,Connected,*** GOOD ***
+    03-17-2013 20:46:53.785592,wsj.com,205.203.140.1,442,0,No Connection
+    03-17-2013 20:46:53.785968,wsj.com,205.203.140.1,443,1,Connected,*** GOOD ***
+
+ Note that is runs pretty quick:
+
+    real	   0m1.124s
+    user	   0m0.003s
+    sys	           0m0.007s
 
 
  Getting and Compiling the Program (It's just one source file):
 
     wget https://raw.github.com/mchirico/ct/master/src/ct.c
     gcc ct.c -o ct -lpthread
+
+
+ The program is still alpha.
 

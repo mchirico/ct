@@ -516,7 +516,7 @@ getK (Vec * c, int i)
 #define SA      struct sockaddr
 #define MAXLINE 4096
 #define MAXSUB  200
-#define MAX_WORKER_THREADS 20
+#define MAX_WORKER_THREADS 30
 #define MAX_NUM_THREAD_DATABASE 200
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
