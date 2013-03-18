@@ -3,7 +3,7 @@
   The MIT License (MIT)
   Copyright (c) 2005 Mike Chirico mchirico@gmail.com
   https://github.com/mchirico/ct
-  
+
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -111,9 +111,6 @@ typedef struct str_thdata
     char comment[MAXSUB + 1];
 
 } thdata;
-
-
-
 
 
 
@@ -816,7 +813,6 @@ process_loop (int argc, char **argv)
         for (ki = 0; ki < (k->argc); ++ki)
         {
 
-
             k = getK (v, vi);
             snprintf (tp, 20, "%s", getKkey (k, ki));
             //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
@@ -833,6 +829,11 @@ process_loop (int argc, char **argv)
                 for (j = 0; j < MAX_WORKER_THREADS; ++j)
                 {
                     sig = pthread_cancel (thread[j]);
+                    if (sig != 0)
+                    {
+                        //fprintf(stderr, "Error thread may have terminated.\n");
+                    }
+                    sig = pthread_join(thread[j],0);
                     if (sig != 0)
                     {
                         //fprintf(stderr, "Error thread may have terminated.\n");
@@ -860,10 +861,16 @@ process_loop (int argc, char **argv)
             {
                 //fprintf(stderr, "Error thread may have terminated.\n");
             }
+            sig = pthread_join(thread[j],0);
+            if (sig != 0)
+            {
+                //fprintf(stderr, "Error thread may have terminated.\n");
+            }
             close (data[j].sockfd);
             prData (&data[j]);
         }
     }
+
     myfreeV (v);
 
 }
