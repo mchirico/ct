@@ -4,8 +4,13 @@ ct
 ct (Connection Test) - simple tool for testing a connection, without blocking.
 
 
+##Getting and Compiling the Program (It's just one source file):
 
- Example Usage:
+    wget https://raw.github.com/mchirico/ct/master/src/ct.c
+    gcc ct.c -o ct -lpthread
+
+
+##Example Usage:
 
     $ ./ct gmail.com 80
     03-16-2013 12:59:32.20282,gmail.com,74.125.226.213,80,Connected,***   Good  ***
@@ -33,11 +38,6 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     sys	           0m0.007s
 
 
-
-##Getting and Compiling the Program (It's just one source file):
-
-    wget https://raw.github.com/mchirico/ct/master/src/ct.c
-    gcc ct.c -o ct -lpthread
 
 
 
