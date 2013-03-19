@@ -41,7 +41,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
 
 
  Although nmap is often faster, there are situations (Linux on Mac OS X vm),
- where nmap is extremely slow.
+ where nmap is extremely slow:
  
   
    time nmap -PN -p 80 gmail.com
