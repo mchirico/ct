@@ -707,7 +707,7 @@ setupConnection (char *hname, char *port, thdata * data)
     struct hostent *hptr;
     if ((hptr = gethostbyname (hname)) == NULL)
     {
-        fprintf (stderr, " gethostbyname error for host: %s: %s",
+        fprintf (stderr, " gethostbyname error for host: %s: %s\n",
                  hname, hstrerror (h_errno));
         exit (1);
     }
