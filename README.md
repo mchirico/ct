@@ -10,7 +10,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     gcc ct.c -o ct -lpthread
 
 
-##Example Usage:
+###Example Usage:
 
     $ ./ct gmail.com 80
     03-16-2013 12:59:32.20282,gmail.com,74.125.226.213,80,Connected,***   Good  ***
