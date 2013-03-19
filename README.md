@@ -71,6 +71,22 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     sys	   0m0.003s
 
 
+ Note that ct also allows easy mixing of IP addresses and hostnames -- not switches, just 
+ simple commands.
+
+    time ./ct openadsi.com,wsj.com,google.com,nyt.com,amazon.com,192.168.1.1,192.168.1.6 80
+    03-19-2013 03:13:06.552708,openadsi.com,107.21.122.231,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.553387,wsj.com,205.203.132.65,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.554087,google.com,74.125.226.198,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.554681,nyt.com,170.149.168.130,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.555606,amazon.com,205.251.242.54,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.555511,192.168.1.1,192.168.1.1,80,1,Connected,*** GOOD ***
+    03-19-2013 03:13:06.555413,192.168.1.6,192.168.1.6,80,1,Connected,*** GOOD ***
+
+    real   0m1.007s
+    user   0m0.000s
+    sys	   0m0.004s
+
 
  The program is still alpha, and the idea is to keep it all in one program, which
  is what SQLite is doing with it's amalgamation.
