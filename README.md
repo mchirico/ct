@@ -42,23 +42,22 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
 
  Although nmap is often faster, there are situations (Linux on Mac OS X vm),
  where nmap is extremely slow:
- 
   
-   time nmap -PN -p 80 gmail.com
+    time nmap -PN -p 80 gmail.com
 
-   Starting Nmap 5.51 ( http://nmap.org ) at 2013-03-19 02:51 PDT
-   Nmap scan report for gmail.com (74.125.226.214)
-   Host is up (0.026s latency).
-   Other addresses for gmail.com (not scanned): 74.125.226.213
-   rDNS record for 74.125.226.214: lga15s28-in-f22.1e100.net
-   PORT   STATE SERVICE
-   80/tcp open  http
+    Starting Nmap 5.51 ( http://nmap.org ) at 2013-03-19 02:51 PDT
+    Nmap scan report for gmail.com (74.125.226.214)
+    Host is up (0.026s latency).
+    Other addresses for gmail.com (not scanned): 74.125.226.213
+    rDNS record for 74.125.226.214: lga15s28-in-f22.1e100.net
+    PORT   STATE SERVICE
+    80/tcp open  http
 
-  Nmap done: 1 IP address (1 host up) scanned in 6.60 seconds
+      Nmap done: 1 IP address (1 host up) scanned in 6.60 seconds
 
-   real 0m6.606s
-   user 0m0.028s
-   sys  0m0.014s
+    real 0m6.606s
+    user 0m0.028s
+    sys  0m0.014s
 
 
  Compare this to ct
