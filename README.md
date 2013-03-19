@@ -66,8 +66,8 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     time ./ct gmail.com 80
     03-19-2013 02:52:08.333391,gmail.com,74.125.226.213,80,1,Connected,*** GOOD ***
 
-    real	   0m1.005s
-    user	   0m0.001s
+    real   0m1.005s
+    user   0m0.001s
     sys	   0m0.003s
 
 
