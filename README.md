@@ -71,8 +71,8 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     sys	   0m0.003s
 
 
- Note that ct also allows easy mixing of IP addresses and hostnames -- not switches, just 
- simple commands.
+ Note that ct also allows easy mixing of IP addresses and hostnames (no switches, just 
+ simple commands).
 
     time ./ct openadsi.com,wsj.com,google.com,nyt.com,amazon.com,192.168.1.1,192.168.1.6 80
     03-19-2013 03:13:06.552708,openadsi.com,107.21.122.231,80,1,Connected,*** GOOD ***
