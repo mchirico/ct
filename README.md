@@ -4,7 +4,7 @@ ct
 ct (Connection Test) - simple tool for testing a connection, without blocking.
 
 
-##Getting and Compiling the Program (It's just one source file):
+###Getting and Compiling the Program (It's just one source file):
 
     wget https://raw.github.com/mchirico/ct/master/src/ct.c
     gcc ct.c -o ct -lpthread
