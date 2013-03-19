@@ -33,6 +33,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     sys	           0m0.007s
 
 
+==
  *Getting and Compiling the Program (It's just one source file):
 
     wget https://raw.github.com/mchirico/ct/master/src/ct.c
