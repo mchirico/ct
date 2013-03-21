@@ -946,9 +946,12 @@ main (int argc, char **argv)
     if (argc != 3)
     {
         fprintf (stderr,
-                 "\n%s\nversion %s\n\nUsage: %s host1,host2  port1,port2,port-port\nExample:\n %s gmail.com,google.com 80,440-444\n\n",
+                 "\n%s\nversion %s\n\nUsage:\n  %s host1,host2  port1,port2,port-port\n\nExample:\n  %s gmail.com,google.com 80,440-444\n\n",
                  "Source: https://github.com/mchirico/ct", _VERSION_,
                  argv[0], argv[0]);
+	fprintf(stderr,"\nSteps to get and build latest verson:\n%s\n%s",
+		"  curl  https://raw.github.com/mchirico/ct/master/src/ct.c  > ct.c",
+		"  gc ct.c -o ct -lpthread\n");
         exit (EXIT_FAILURE);
     }
     process_loop (argc, argv);
