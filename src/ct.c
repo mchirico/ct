@@ -951,7 +951,7 @@ main (int argc, char **argv)
                  argv[0], argv[0]);
 	fprintf(stderr,"\nSteps to get and build latest verson:\n%s\n%s",
 		"  curl  https://raw.github.com/mchirico/ct/master/src/ct.c  > ct.c",
-		"  gc ct.c -o ct -lpthread\n");
+		"  gcc ct.c -o ct -lpthread\n");
         exit (EXIT_FAILURE);
     }
     process_loop (argc, argv);
