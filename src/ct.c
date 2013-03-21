@@ -95,7 +95,8 @@ TODO:
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
-#define _VERSION_ "0.0.1"
+#define _VERSION_ "0.0.2"
+#define MAX_PERMITTED_SCANS 10000
 
 extern int h_errno;
 
@@ -259,7 +260,6 @@ parse_hosts (char *s, char **array, Vec * v, const char *argv2)
             if (count2 == 2)
             {
                 printf ("We have double last=%s current=%s\n", last, subtoken);
-
 
             }
             snprintf (last, 50, "%s", subtoken);
@@ -540,6 +540,7 @@ getK (Vec * c, int i)
 
     return NULL;
 }
+
 /* END OF ADDING VECTOR */
 
 
@@ -773,37 +774,7 @@ prData (thdata * data)
 /*
   This will need to be cleaned up. A lot of extra variables here.
 
-valgrind ./ct 192.168.1.6 1-48
 
-==60851==
-==60851== HEAP SUMMARY:
-==60851==     in use at exit: 0 bytes in 0 blocks
-==60851==   total heap usage: 302 allocs, 302 frees, 36,966 bytes allocated
-==60851==
-==60851== All heap blocks were freed -- no leaks are possible
-==60851==
-==60851== For counts of detected and suppressed errors, rerun with: -v
-==60851== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
-
-
-Yet, see below the reuse of threads is not correct.
-
-valgrind ./ct 192.168.1.6 1-100
-
-60906== HEAP SUMMARY:
-==60906==     in use at exit: 13,600 bytes in 50 blocks
-==60906==   total heap usage: 610 allocs, 560 frees, 113,304 bytes allocated
-==60906==
-==60906== LEAK SUMMARY:
-==60906==    definitely lost: 0 bytes in 0 blocks
-==60906==    indirectly lost: 0 bytes in 0 blocks
-==60906==      possibly lost: 13,600 bytes in 50 blocks
-==60906==    still reachable: 0 bytes in 0 blocks
-==60906==         suppressed: 0 bytes in 0 blocks
-==60906== Rerun with --leak-check=full to see details of leaked memory
-==60906==
-==60906== For counts of detected and suppressed errors, rerun with: -v
-==60906== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 6 from 6)
 
  */
 int
@@ -818,9 +789,15 @@ process_loop (int argc, char **argv)
 
     char hname[MAXSUB + 1];
     char port[MAXSUB + 1];
-    int tflag[MAX_WORKER_THREADS+200];
+    int  recovery_test=0;
+    int tflag[MAX_WORKER_THREADS + 1];
+
 
     int i;
+
+    for (i = 0; i < MAX_WORKER_THREADS; ++i)
+        tflag[i] = -2;
+
     char tp[20 + 1];
     int sig;
     int loops;
@@ -842,11 +819,12 @@ process_loop (int argc, char **argv)
 
     loops = v->argc * k->argc;
 
-    if (loops >= MAX_WORKER_THREADS) {
+
+    if (loops >= MAX_PERMITTED_SCANS) {
         myfreeV (v);
-        fprintf(stderr,"Too many scans - try less. Something under (hosts*ports) < %d\n",MAX_WORKER_THREADS);
+        fprintf(stderr,"Too many scans - try less. Something under (hosts*ports) < %d\n",MAX_PERMITTED_SCANS);
         exit(-1);
-	} 
+    }
 
 
     int vi, ki;
@@ -856,50 +834,67 @@ process_loop (int argc, char **argv)
     for (vi = 0; vi < (v->argc); ++vi)
         for (ki = 0; ki < (k->argc); ++ki)
         {
-            thread_index=i % MAX_WORKER_THREADS;
+            thread_index = i % MAX_WORKER_THREADS;
             k = getK (v, vi);
             snprintf (tp, 20, "%s", getKkey (k, ki));
             //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
             setupConnection (getV (v, vi), tp, &data[thread_index]);
-            err=pthread_create (&thread[thread_index], NULL,
-                                (void *) &quickConnect,
-                                (void *) &data[thread_index]);
-            if(err != 0)
+            err = pthread_create (&thread[thread_index], NULL,
+                                  (void *) &quickConnect,
+                                  (void *) &data[thread_index]);
+            if (err != 0)
             {
-                fprintf(stderr,"Issue with pthread_create in process_loop\n");
-                tflag[thread_index]=-1;
-            } else {
-                tflag[thread_index]=1;
+                fprintf (stderr, "Issue with pthread_create in process_loop\n");
+                tflag[thread_index] = -1;
+            }
+            else
+            {
+                tflag[thread_index] = 1;
             }
 
             /* We need to recover threads */
-            if (i > 0 && (thread_index == 0))
+            //if (i > 0 && ( thread_index  == 0))   //too late
+            if (i > 0 && ( (i+1) % MAX_WORKER_THREADS  == 0))   //too late
             {
-                if (data[thread_index].status != 1) {
-                    printf("Yep. We had to sleep 0\n");
+                recovery_test=1;
+                if (data[thread_index].status != 1)
+                {
+                    // printf ("Yep. We had to sleep 0\n");
                     sleep (1);
                 }
-                printf("Thread status %d\n",data[thread_index].status);
+
                 int j = 0;
                 for (j = 0; j < MAX_WORKER_THREADS; ++j)
                 {
-                    if(tflag[j] == 1)
+                    if (tflag[j] == 1)
+                    {
                         sig = pthread_cancel (thread[j]);
-                    if (sig != 0)
-                    {
-                        fprintf(stderr, "Error thread may have terminated.\n");
-                        tflag[j]=-1;
-                    } else {
-                        tflag[j]=0;
-                    }
-                    sig = pthread_join(thread[j],0);
-                    if (sig != 0)
-                    {
-                        fprintf(stderr, "Error thread may have terminated.\n");
-                    }
-                    close (data[j].sockfd);
+                        if (sig != 0)
+                        {
+                            tflag[j] = -1;
+                        }
+                        else
+                        {
+                            tflag[j] = 0;
+                        }
+                        if (tflag[j] != -2)
+                            sig = pthread_join (thread[j], 0);
+                        if (sig != 0)
+                        {
+                            fprintf (stderr,
+                                     "Error thread may have terminated.\n");
+                        }
+                        else
+                        {
+                            tflag[j] = -2;
+                        }
+                        tflag[j] = -2;
 
-                    prData (&data[j]);
+                        close (data[j].sockfd);
+
+                        prData (&data[j]);
+                    }
+
                 }
             }
 
@@ -909,32 +904,33 @@ process_loop (int argc, char **argv)
 
     /* We may have extra (loops % (MAX_WORKER_THREADS) is loops > MAX_ */
 
+    sleep (1);
     int j = 0;
-    for (j = 0; j < (loops % MAX_WORKER_THREADS); ++j)
+    for (j = 0; j < MAX_WORKER_THREADS; ++j)
     {
 
-      if (data[j].status != 1 && (j== 0)) {
-	/*  printf("Yep. We had to sleep 1\n");  */
-            sleep (1);
-        }
-      /* printf("Thread status data[%d].status=%d  loops=%d\n",j,data[j].status,loops);  */
-        if(tflag[j]==1)
+        if (tflag[j] == 1)
+        {
             sig = pthread_cancel (thread[j]);
-        if (sig != 0)
-        {
-            //fprintf(stderr, "Error thread may have terminated.\n");
-            tflag[j]=-1;
-        } else
-        {
-            tflag[j]=0;
+            if (sig != 0)
+            {
+                //fprintf(stderr, "Error thread may have terminated.\n");
+                tflag[j] = -1;
+            }
+            else
+            {
+                tflag[j] = 0;
+            }
+
+            sig = pthread_join (thread[j], 0);
+            if (sig != 0)
+            {
+                //fprintf(stderr, "Error thread may have terminated.\n");
+            }
+            tflag[j] = -1;
+            close (data[j].sockfd);
+            prData (&data[j]);
         }
-        sig = pthread_join(thread[j],0);
-        if (sig != 0)
-        {
-            //fprintf(stderr, "Error thread may have terminated.\n");
-        }
-        close (data[j].sockfd);
-        prData (&data[j]);
     }
 
 
@@ -951,11 +947,10 @@ main (int argc, char **argv)
     {
         fprintf (stderr,
                  "\n%s\nversion %s\n\nUsage: %s host1,host2  port1,port2,port-port\nExample:\n %s gmail.com,google.com 80,440-444\n\n",
-                 "Source: https://github.com/mchirico/ct",_VERSION_,
+                 "Source: https://github.com/mchirico/ct", _VERSION_,
                  argv[0], argv[0]);
         exit (EXIT_FAILURE);
     }
     process_loop (argc, argv);
 
 }
-
