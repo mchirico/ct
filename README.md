@@ -18,7 +18,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
     $ ./ct gmail.com 81
     03-16-2013 13:00:10.79637,gmail.com,74.125.226.213,81,No Connection
 
- You can also do a range of ports with multiple hosts:
+ You can also do a range of ports, with multiple hosts:
 
     $ time ./ct gmail.com,google.com,wsj.com 80,442-443
     03-17-2013 20:46:53.729206,gmail.com,74.125.226.214,80,1,Connected,*** GOOD ***
@@ -42,7 +42,7 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
 
 
  Although nmap is often faster, there are situations (Linux on Mac OS X vm),
- where nmap is extremely slow:
+ where nmap can be extremely slow:
   
     time nmap -PN -p 80 gmail.com
 
@@ -90,3 +90,4 @@ ct (Connection Test) - simple tool for testing a connection, without blocking.
 
  The program is still alpha, and the idea is to keep it all in one program, which
  is what SQLite is doing with it's amalgamation.
+
