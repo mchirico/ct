@@ -62,8 +62,30 @@
 
 TODO:
 
-    Phase I was getting a working prototype as quickly as possible.
-    Error checking, re-factor, and add getops capability.
+
+    Phase I.
+
+       Getting working prototype up and running fast. Do
+       NOT worry about anything but getting this program
+       running.
+
+    Phase II.
+
+       Find out what is useful in the running program.
+       Get new ideas and quickly implement.
+
+    Phase III.
+
+       Start to fix,re-factor and make more efficient.
+
+    Phase IV.
+
+       Repeat Phase I-IV.
+
+
+    IDEAS:
+
+     Add getop switches, speed-up the program.
 
 
 
@@ -83,6 +105,7 @@ TODO:
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <netdb.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -673,6 +696,7 @@ quickConnect (void *ptr)
         //exit(1);
     }
 
+    return NULL;
 }
 
 
@@ -742,7 +766,7 @@ setupConnection (char *hname, char *port, thdata * data)
     strcpy (data->port, port);
     //printf("Setup connection port %s  host=%s\n", data->port, data->hname);
 
-
+    return 0;
 }
 
 void
@@ -787,8 +811,8 @@ process_loop (int argc, char **argv)
 					   threads */
 
 
-    char hname[MAXSUB + 1];
-    char port[MAXSUB + 1];
+    //char hname[MAXSUB + 1];
+    //char port[MAXSUB + 1];
     int  recovery_test=0;
     int tflag[MAX_WORKER_THREADS + 1];
 
@@ -802,12 +826,13 @@ process_loop (int argc, char **argv)
     int sig;
     int loops;
     int err;
+    int stat_good=0;
 
     char c[1000];
-    char ports[1000];
-    char *str1, *str2, *token, *subtoken;
-    char *saveptr1, *saveptr2;
-    char **array;
+    //    char ports[1000];
+    char **array=NULL;
+
+
 
     Key_val *k = NULL;
     Vec *v = NULL;
@@ -930,18 +955,21 @@ process_loop (int argc, char **argv)
             tflag[j] = -1;
             close (data[j].sockfd);
             prData (&data[j]);
+            if(data[j].status == 1)
+                ++stat_good;
         }
     }
 
 
     myfreeV (v);
-
+    return stat_good;
 }
 
 
 int
 main (int argc, char **argv)
 {
+    int exit_code=0;
 
     if (argc != 3)
     {
@@ -949,11 +977,16 @@ main (int argc, char **argv)
                  "\n%s\nversion %s\n\nUsage:\n  %s host1,host2  port1,port2,port-port\n\nExample:\n  %s gmail.com,google.com 80,440-444\n\n",
                  "Source: https://github.com/mchirico/ct", _VERSION_,
                  argv[0], argv[0]);
-	fprintf(stderr,"\nSteps to get and build latest verson:\n%s\n%s",
-		"  curl  https://raw.github.com/mchirico/ct/master/src/ct.c  > ct.c",
-		"  gcc ct.c -o ct -lpthread\n");
+        fprintf(stderr,"\nSteps to get and build latest verson:\n%s\n%s",
+                "  curl  https://raw.github.com/mchirico/ct/master/src/ct.c  > ct.c",
+                "  gcc ct.c -o ct -lpthread\n\n");
         exit (EXIT_FAILURE);
     }
-    process_loop (argc, argv);
+
+
+    exit_code = process_loop (argc, argv);
+
+
+    return exit_code;
 
 }
