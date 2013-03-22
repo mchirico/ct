@@ -115,7 +115,7 @@
 #define MAXLINE 4096
 #define MAXSUB  200
 #define MAX_WORKER_THREADS 50
-#define MAX_NUM_THREAD_DATABASE 200
+#define MAX_NUM_THREAD_DATABASE MAX_WORKER_THREADS + 1
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
@@ -506,8 +506,8 @@ find (Key_val * c, const char *s)
 }
 
 
-/*  What if we
- did not find
+/*  Add the key value combination, if we do not 
+    find it.
  */
 int
 modify (Key_val * c, const char *s, const char *new_val)
@@ -797,7 +797,7 @@ prData (thdata * data)
 
 
 /*
- This will need to be cleaned up. A lot of extra variables here.
+ This will need to be cleaned up.
  
  
  
@@ -970,7 +970,7 @@ process_loop (int argc, char **argv)
 int
 main (int argc, char **argv)
 {
-    int exit_code=0;
+    
     
     if (argc != 3)
     {
@@ -984,12 +984,8 @@ main (int argc, char **argv)
         exit (EXIT_FAILURE);
     }
     
+    return process_loop (argc, argv);
     
-    exit_code = process_loop (argc, argv);
-    
-    
-    return exit_code;
     
 }
-
 
