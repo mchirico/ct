@@ -119,7 +119,7 @@
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
-#define _VERSION_ "0.0.3"
+#define _VERSION_ "0.0.4"
 #define MAX_PERMITTED_SCANS 10000
 
 extern int h_errno;
@@ -287,8 +287,9 @@ parse_hosts (char *s, char **array, Vec * v, const char *argv2)
                 
             }
             snprintf (last, 50, "%s", subtoken);
-            char ts[15 + 1];
-            snprintf (ts, 15, "%s", last);
+            // This is hostname
+            char ts[45 + 1];
+            snprintf (ts, 45, "%s", last);
             k = NULL;
             strcpy (ports, argv2);
             k = parse_ports (ports, tarray, k);
@@ -989,7 +990,7 @@ main (int argc, char **argv)
                 "  gcc ct.c -o ct -lpthread\n\n");
         exit (EXIT_FAILURE);
     }
-    
+
     return process_loop (argc, argv);
     
     
