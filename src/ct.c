@@ -119,7 +119,7 @@
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
-#define _VERSION_ "0.0.2"
+#define _VERSION_ "0.0.3"
 #define MAX_PERMITTED_SCANS 10000
 
 extern int h_errno;
@@ -735,7 +735,9 @@ setupConnection (char *hname, char *port, thdata * data)
     {
         fprintf (stderr, " gethostbyname error for host: %s: %s\n",
                  hname, hstrerror (h_errno));
-        exit (1);
+        // You do not want to exit. Want to check if IP. If not move on.
+	//  exit (1);
+	return 1;
     }
     //prTime();
     
@@ -864,7 +866,11 @@ process_loop (int argc, char **argv)
             k = getK (v, vi);
             snprintf (tp, 20, "%s", getKkey (k, ki));
             //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
-            setupConnection (getV (v, vi), tp, &data[thread_index]);
+            if ( setupConnection (getV (v, vi), tp, &data[thread_index]) != 0 )
+              {
+		//printf("Going to coninue\n");
+	      continue;
+	      }
             err = pthread_create (&thread[thread_index], NULL,
                                   (void *) &quickConnect,
                                   (void *) &data[thread_index]);
