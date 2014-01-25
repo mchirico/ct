@@ -1,5 +1,12 @@
 /*
 
+ Getting and Compiling the Program:
+
+ wget https://raw.github.com/mchirico/ct/master/src/ct.c
+ gcc ct.c -o ct -lpthread
+
+
+
  The MIT License (MIT)
  Copyright (c) 2005 Mike Chirico mchirico@gmail.com
  https://github.com/mchirico/ct
@@ -52,10 +59,6 @@
 
 
 
- Getting and Compiling the Program:
-
- wget https://raw.github.com/mchirico/ct/master/src/ct.c
- gcc ct.c -o ct -lpthread
 
 
 
