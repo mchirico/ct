@@ -121,7 +121,7 @@
 #define TIMEBUF_SIZE 30
 #define LISTENQ         1024
 
-#define _VERSION_ "0.0.4a"
+#define _VERSION_ "0.0.4b"
 #define MAX_PERMITTED_SCANS 10000
 
 extern int h_errno;
@@ -185,7 +185,6 @@ Key_val *
 parse_ports (char *s, char **array, Key_val * k)
 {
 
-
     char *str1, *str2, *token, *subtoken;
     char *saveptr1, *saveptr2;
     char *sep1 = ",";
@@ -221,7 +220,7 @@ parse_ports (char *s, char **array, Key_val * k)
                         for (t = beg + 1; t < end; ++t)
                         {
                             //printf("G %d\n", t);
-                            char ts[15]; 
+                            char ts[15];
                             snprintf (ts, 15, "%d", t);
                             k = keyAdd (k, ts, "0");
                             ++count;
@@ -241,10 +240,8 @@ parse_ports (char *s, char **array, Key_val * k)
             ++count;
         }
     }
-
     if (k == NULL)
-        printf ("ODD should not be null\n");
-
+        printf ("ODD should not be null. ERR:01\n");
     return k;
 }
 
@@ -286,11 +283,10 @@ parse_hosts (char *s, char **array, Vec * v, const char *argv2)
             if (count2 == 2)
             {
                 printf ("We have double last=%s current=%s\n", last, subtoken);
-
             }
             snprintf (last, 50, "%s", subtoken);
             // This is hostname
-            char ts[45 + 1];
+            char ts[45];
             snprintf (ts, 45, "%s", last);
             k = NULL;
             strcpy (ports, argv2);
@@ -417,8 +413,6 @@ getV (Vec * c, int index)
         return NULL;
 
     return c->key[index];
-
-
 }
 
 char *
@@ -429,8 +423,6 @@ getKkey (Key_val * c, int index)
         return NULL;
 
     return c->key[index];
-
-
 }
 
 
@@ -449,7 +441,6 @@ prV (Vec * c)
         printf ("\n\n");
 
     }
-
     return;
 }
 
@@ -871,7 +862,7 @@ process_loop (int argc, char **argv)
             //printf("i=%d  getV(v,vi)=%s  tp=%s\n", i, getV(v, vi), tp);
             if ( setupConnection (getV (v, vi), tp, &data[thread_index]) != 0 )
             {
-                //printf("Going to coninue\n");
+                //printf("Going to continue\n");
                 continue;
             }
             err = pthread_create (&thread[thread_index], NULL,
