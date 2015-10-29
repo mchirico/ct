@@ -2,7 +2,7 @@
 
  Getting and Compiling the Program:
 
- wget https://raw.github.com/mchirico/ct/master/src/ct.c
+ curl  https://raw.githubusercontent.com/mchirico/ct/master/src/ct.c  > ct.c
  gcc ct.c -o ct -lpthread
 
 
@@ -979,7 +979,7 @@ main (int argc, char **argv)
                  "Source: https://github.com/mchirico/ct", _VERSION_,
                  argv[0], argv[0]);
         fprintf(stderr,"\nSteps to get and build latest verson:\n%s\n%s",
-                "  curl  https://raw.github.com/mchirico/ct/master/src/ct.c  > ct.c",
+                "  curl  https://raw.githubusercontent.com/mchirico/ct/master/src/ct.c  > ct.c",
                 "  gcc ct.c -o ct -lpthread\n\n");
         exit (EXIT_FAILURE);
     }
