@@ -644,7 +644,12 @@ getTime (char *buffer)
     gettimeofday (&tv, NULL);
     curtime = tv.tv_sec;
     strftime (tbuff, 30, "%m-%d-%Y %T.", localtime (&curtime));
+#if defined(__APPLE__)
     snprintf (buffer, 30, "%s%d", tbuff, tv.tv_usec);
+#else
+    snprintf (buffer, 30, "%s%ld", tbuff, tv.tv_usec);
+#endif
+
 
     return (int) strlen (buffer);
 
@@ -664,7 +669,12 @@ prTime ()
     curtime = tv.tv_sec;
 
     strftime (buffer, 30, "%m-%d-%Y %T.", localtime (&curtime));
+#if defined(__APPLE__)
     printf ("%s%d", buffer, tv.tv_usec);
+#else
+    printf ("%s%ld", buffer, tv.tv_usec);
+#endif
+    
     return;
 
 }
